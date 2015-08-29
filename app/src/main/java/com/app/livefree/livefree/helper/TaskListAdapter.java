@@ -18,23 +18,23 @@ import java.util.List;
  * Created by anujkumars on 8/29/2015.
  */
 public class TaskListAdapter extends BaseAdapter {
-    private List<Task> alertList;
+    private List<Task> taskList;
     private LayoutInflater inflater;
     private Activity activity;
 
     public TaskListAdapter(Activity activity, List<Task> taskList) {
-        this.alertList = alertList;
+        this.taskList = taskList;
         this.activity = activity;
     }
 
     @Override
     public int getCount() {
-        return alertList.size();
+        return taskList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return alertList.get(position);
+        return taskList.get(position);
     }
 
     @Override
@@ -49,15 +49,13 @@ public class TaskListAdapter extends BaseAdapter {
         if (convertView == null)
             convertView = inflater.inflate(R.layout.listview_tasklist_row_item, null);
 
-        TextView name = (TextView) convertView.findViewById(R.id.textview_taskdescription);
-        TextView alertmsg = (TextView) convertView.findViewById(R.id.textview_tasktype);
+        TextView description = (TextView) convertView.findViewById(R.id.textview_taskdescription);
+        TextView type = (TextView) convertView.findViewById(R.id.textview_tasktype);
 
-        ImageView statusIcon = (ImageView) convertView.findViewById(R.id.alertlist_alert_icon);
-        TextView notifyAgain = (TextView) convertView.findViewById(R.id.alertlist_notify_textview);
+        ImageView statusIcon = (ImageView) convertView.findViewById(R.id.tasklist_work_icon);
 
-        name.setText(String.valueOf(alertList.get(position).getDeviceName()));
-        alertmsg.setText(String.valueOf(alertList.get(position).getAlertMessage()));
-        statusIcon.setImageResource(R.drawable.icon_warning);
+        description.setText(String.valueOf(taskList.get(position).getDescription()));
+        type.setText(String.valueOf(taskList.get(position).getPriority()));
         return convertView;
 
     }

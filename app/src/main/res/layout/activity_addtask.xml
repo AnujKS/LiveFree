@@ -15,4 +15,5 @@
             android:inputType="textEmailAddress"
             android:hint="Task Description" />
     </android.support.design.widget.TextInputLayout>
+
 </LinearLayout>
