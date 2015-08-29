@@ -4,10 +4,10 @@ package com.app.livefree.livefree.model;
  * Created by anujkumars on 8/29/2015.
  */
 public class User {
-    int id;
-    String phone;
-    String name;
-    String registrationKey;
+    public int id;
+    public String phone;
+    public String name;
+    public String registrationKey;
 
     public String getRegistrationKey() {
         return registrationKey;
@@ -25,6 +25,10 @@ public class User {
     public void setName(String name,String phone) {
         this.name = name;
         this.phone=phone;
+    }
+
+    public User(){
+
     }
 
     public User(String phone) {

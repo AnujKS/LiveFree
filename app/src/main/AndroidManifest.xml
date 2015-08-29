@@ -21,6 +21,9 @@
 
         <activity android:name=".AddTaskActivity"
             android:label="Add Task"></activity>
+
+        <activity android:name=".RegiterActivity"
+            android:label="Register"></activity>
     </application>
 
 </manifest>
