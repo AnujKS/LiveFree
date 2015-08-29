@@ -13,6 +13,7 @@ public class ApplicationConstants {
     public static final String CALLING_ACTIVITY = "CALLING_ACTIVITY";
     public static final int LOGIN_ACTIVITY = 1;
     public static final int TASK_LIST_ACTIVITY = 2;
+    public static final int ADD_TASK_ACTIVITY = 3;
     /*****************Class Constants********************/
 
 }

@@ -18,8 +18,11 @@ import com.app.livefree.livefree.exception.LiveFreeErrors;
 import com.app.livefree.livefree.exception.LiveFreeException;
 import com.app.livefree.livefree.filter.MapsFilter;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,13 +48,36 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
 
         Intent callingIntent = getIntent();
         int callingActivity = callingIntent.getIntExtra(ApplicationConstants.CALLING_ACTIVITY,0);
-        if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            buildAlertMessageNoGps();
+        switch (callingActivity) {
+
+            case ApplicationConstants.ADD_TASK_ACTIVITY: {
+                try {
+                    PlacePicker.IntentBuilder intentBuilder =
+                            new PlacePicker.IntentBuilder();
+                    Intent intent = intentBuilder.build(this);
+                    // Start the intent by requesting a result,
+                    // identified by a request code.
+                    startActivityForResult(intent, 1);
+
+                } catch (GooglePlayServicesRepairableException e) {
+                    // ...
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    // ...
+                }
+                //TODO get name of the location from input box
+                //TODO use geocoding here
+                //TODO send it to calling activity
+                break;
+            }
+            default: {
+                if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    buildAlertMessageNoGps();
+                }
+            }
         }
 
         buildGoogleApiClient();
         setUpMapIfNeeded();
-        setUpMap();
     }
 
     @Override
