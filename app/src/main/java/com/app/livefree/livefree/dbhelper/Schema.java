@@ -1,92 +1,31 @@
 package com.app.livefree.livefree.dbhelper;
 
 public class Schema {
-    public static final String CREATE_TABLE_Profile = "create table if not exists " + DbTableStrings.TABLE_NAME_USER_MODEL +
-            "( _id integer primary key autoincrement, "
+    public static final String CREATE_TABLE_USER = "create table if not exists " + DbTableStrings.TABLE_NAME_USER_MODEL +
+            "( user_id integer primary key autoincrement, "
             + DbTableStrings.NAME + " string, "
             + DbTableStrings.PHONENUMBER + " string) ";
 
-    public static final String CREATE_TABLE_REQUESTS = "create table if not exists " + DbTableStrings.TABLE_NAME_REQUESTS +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.REQUEST_ID + " string, "
-            + DbTableStrings.REQUEST_EUSER_ID + " string, "
-            + DbTableStrings.REQUEST_USERNAME + " string, "
-            + DbTableStrings.REQUEST_STRING + " string, "
-            + DbTableStrings.REQUEST_TIME + " string, "
-            + DbTableStrings.REQUEST_USER_PROFESSION + " string, "
-            + DbTableStrings.REQUEST_USER_PROFILE_PHOTO_SERVER_PATH + " string, "
-            + DbTableStrings.REQUEST_YEAR + " int, "
-            + DbTableStrings.REQUEST_DAY_OF_THE_YEAR + " int) ";
+    public static final String CREATE_TABLE_TASKS = "create table if not exists " + DbTableStrings.TABLE_NAME_TASK +
+            "( task_id integer primary key autoincrement, "
+            + DbTableStrings.DESCRIPTION + " string, "
+            + DbTableStrings.PRIORITY + " string, "
+            + DbTableStrings.DURATION + " string, "
+            + DbTableStrings.REMAINING_DISTANCE + " string, "
+            + DbTableStrings.REMAINING_TIME + " string, "
+            + DbTableStrings.TAG + " string, "
+            + DbTableStrings.TASK_USER_ID + " string, "
+            + DbTableStrings.TASK_LOCATION_ID + " int, "
+            + DbTableStrings.TASK_TIME+ " string) ";
 
-    public static final String CREATE_TABLE_QUESTION_MODEL = "create table if not exists " + DbTableStrings.TABLE_NAME_QUESTION_MODEL +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.USERNAME + " string, "
-            + DbTableStrings.QUESTION + " string, "
-            + DbTableStrings.IMAGE + " string, "
-            + DbTableStrings.QUESTION_ID + " string, "
-            + DbTableStrings.CATEGORY + " string, "
-            + DbTableStrings.ASKED_TIME + " string) ";
+        public static final String CREATE_TABLE_LOCATION = "create table if not exists " + DbTableStrings.TABLE_NAME_INTEREST_LOCATION +
+                "( location_id integer primary key autoincrement, "
+                + DbTableStrings.LATITUDE + " string, "
+                + DbTableStrings.LONGITUDE + " string, "
+                + DbTableStrings.AREA + " string, "
+                + DbTableStrings.AREA_FRIENDLY_NAME + " string) ";
 
-    public static final String CREATE_TABLE_ANSWER_MODEL = "create table if not exists " + DbTableStrings.TABLE_NAME_ANSWER_MODEL +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.ACTUAL_ANSWER + " string, "
-            + DbTableStrings.ANSWERED_BY + " string, "
-            + DbTableStrings.ANSWERED_TIME + " string, "
-            + DbTableStrings.ANSWER_ID + " string, "
-            + DbTableStrings.QUESTION_ID + " string) ";
 
-    public static final String CREATE_TABLE_DEVICE_INFO = "create table if not exists " + DbTableStrings.TABLE_NAME_DEVICE_INFO +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.KEY + " string, "
-            + DbTableStrings.VALUE+ " string) ";
-
-    public static final String CREATE_TABLE_CHAT_INFO = "create table if not exists " + DbTableStrings.TABLE_NAME_CHAT_INFO +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.MESSAGE + " string, "
-            + DbTableStrings.SENTBY + " string, "
-            + DbTableStrings.TIMESTAMP + " string, "
-            + DbTableStrings.CHATID+ " string) ";
-
-    public static final String CREATE_TABLE_CHAT_ID_MAPPING = "create table if not exists " + DbTableStrings.TABLE_NAME_CHAT_ID_MAPPING +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.CHATID + " string, "
-            + DbTableStrings.USERID + " string, "
-            + DbTableStrings.USERNAME + " string) ";
-
-    public static final String CREATE_TABLE_NS_ITEM_MODEL = "create table if not exists " + DbTableStrings.TABLE_NAME_NsItemModel +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.TITLE + " string, "
-            + DbTableStrings.COUNTER + " int) ";
-
-    public static final String INSERT_NOTIFICATION_CONSTANT1 = "INSERT INTO " + DbTableStrings.TABLE_NAME_NsItemModel + " ("
-            + DbTableStrings.TITLE + ", "
-            + DbTableStrings.COUNTER + ") Values ('Constant1', 0)";
-
-    public static final String INSERT_NOTIFICATION_CONSTANT2 = "INSERT INTO " + DbTableStrings.TABLE_NAME_NsItemModel + " ("
-            + DbTableStrings.TITLE + ", "
-            + DbTableStrings.COUNTER + ") Values ('Constant2', 0)";
-
-    public static final String INSERT_NOTIFICATION_CONSTANT3 = "INSERT INTO " + DbTableStrings.TABLE_NAME_NsItemModel + " ("
-            + DbTableStrings.TITLE + ", "
-            + DbTableStrings.COUNTER + ") Values ('Constant3', 0)";
-
-    public static final String INSERT_NOTIFICATION_CONSTANT4 = "INSERT INTO " + DbTableStrings.TABLE_NAME_NsItemModel + " ("
-            + DbTableStrings.TITLE + ", "
-            + DbTableStrings.COUNTER + ") Values ('Constant4', 0)";
-
-    public static final String CREATE_TABLE_MY_QUESTIONS = "create table if not exists " + DbTableStrings.TABLE_NAME_MY_QUESTIONS +
-            "( _id integer primary key autoincrement, "
-            + DbTableStrings.MYUSERNAME + " string, "
-            + DbTableStrings.MYQUESTION + " string, "
-            + DbTableStrings.MYIMAGE + " string, "
-            + DbTableStrings.MYQUESTION_ID + " string, "
-            + DbTableStrings.MYCATEGORY + " string, "
-            + DbTableStrings.MYASKED_TIME + " string) ";
-
-    public static final String CREATE_TABLE_NOTIFS_TABLE ="create table if not exists "+ DbTableStrings.TABLE_NAME_NOTIFS_TABLE +
-            "( _id integer primary key autoincrement, "
-            +DbTableStrings.QUESTIONID_NOTIF + " string, "
-            +DbTableStrings.ANSWERID_NOTIF + " string)";
 }
 
 

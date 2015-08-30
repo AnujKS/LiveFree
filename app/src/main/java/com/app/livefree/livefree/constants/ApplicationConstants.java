@@ -6,7 +6,7 @@ package com.app.livefree.livefree.constants;
 public class ApplicationConstants {
 
     public static final String GOOGLE_PROJ_ID="514378813249";
-    public static final String APP_SERVER_URL="100.10";
+    public static final String APP_SERVER_URL="http://100.117.97.204/LiveFree/User/Register";
     public static final String MSG_KEY="100";
 
     /*****************Class Constants********************/

@@ -79,15 +79,15 @@ public class UserModelDBHandler {
         }
     }
 
-    public static void UpdateUserData(Context context, User userModel){
+    public static void InsertUserData(Context context, User userModel){
         try{
             ContentValues contentValues = new ContentValues();
             contentValues.put(DbTableStrings.NAME,userModel.name);
             contentValues.put(DbTableStrings.PHONENUMBER,userModel.phone);
 
-            dbHelper = new DbHelper(context);
+            dbHelper = new DbHelper(context.getApplicationContext());
             db = dbHelper.getWritableDatabase();
-           // db.update(DbTableStrings.TABLE_NAME_USER_MODEL, contentValues, DbTableStrings. + " =" + userModel.ServerUserId, null);
+            db.insert(DbTableStrings.TABLE_NAME_USER_MODEL,null,contentValues);
         }
         catch (Exception e)
         {

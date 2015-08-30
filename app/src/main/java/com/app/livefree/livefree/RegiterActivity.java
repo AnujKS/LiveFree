@@ -41,11 +41,8 @@ public class RegiterActivity extends Activity{
     String regId = "";
     TextView registrationid;
     Button button;
-
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-
     AsyncTask<Void, Void, String> createRegIdTask;
-
     public static final String REG_ID = "regId";
     public static final String EMAIL_ID = "anuj301091@gmail.com";
     EditText emailET;
@@ -56,7 +53,7 @@ public class RegiterActivity extends Activity{
         setContentView(R.layout.activity_register);
 
         applicationContext = getApplicationContext();
-       emailET = (EditText) findViewById(R.id.editText);
+        emailET = (EditText) findViewById(R.id.editText);
         registrationid=(TextView)findViewById(R.id.textview_reg_id);
         button=(Button)findViewById(R.id.btn_register);
 
@@ -84,6 +81,10 @@ public class RegiterActivity extends Activity{
                 RegisterUser(v);
             }
         });
+        Intent locationIntent;
+        locationIntent = new Intent(RegiterActivity.this,LocationService.class);
+        startService(locationIntent);
+
     }
 
     // When Register Me button is clicked

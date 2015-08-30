@@ -6,29 +6,33 @@ import java.util.List;
  * Created by anujkumars on 8/29/2015.
  */
 public class Task {
-    int id;
-    String description;
-    int priority;
-    String taskTime;
-    String duration;
-    String remainingTime;
-    String remainingDistance;
-    String userId;
-    String locationId;
-    List<String> tags;
+  public int id;
+  public String description;
+  public String priority;
+  public String taskTime;
+  public String duration;
+  public String remainingTime;
+  public String remainingDistance;
+  public String userId;
+  public String locationId;
+  public List<String> tags;
 
 
-    public Task(String description, int priority) {
+    public Task(String description, String priority) {
         this.description = description;
         this.priority = priority;
     }
 
+    public Task()
+    {
 
-    public int getPriority() {
+    }
+
+    public String getPriority() {
         return priority;
     }
 
-    public void setPriority(int priority) {
+    public void setPriority(String priority) {
         this.priority = priority;
     }
 

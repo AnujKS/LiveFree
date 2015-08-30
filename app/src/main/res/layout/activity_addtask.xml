@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,11 +13,44 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         app:hintTextAppearance="@style/TextAppearence.App.TextInputLayout">
-        <EditText android:id="@+id/input_email_edittext"
+        <EditText android:id="@+id/input_description_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
             android:hint="Task Description" />
     </android.support.design.widget.TextInputLayout>
 
+    <android.support.design.widget.TextInputLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:hintTextAppearance="@style/TextAppearence.App.TextInputLayout">
+    <EditText android:id="@+id/input_prioroty_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:hint="Priority" />
+</android.support.design.widget.TextInputLayout>
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="SET TIME :"
+    android:paddingBottom="5dp"
+    android:layout_marginTop="30dp"/>
+
+    <TimePicker
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/timePicker" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:id="@+id/setlocation"
+        android:text="SET LOCATION"/>
+
+
 </LinearLayout>
+</ScrollView>

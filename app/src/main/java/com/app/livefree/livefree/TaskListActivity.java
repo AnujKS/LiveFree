@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.app.livefree.livefree.R;
+import com.app.livefree.livefree.dbhandler.TaskDBHandler;
 import com.app.livefree.livefree.helper.TaskListAdapter;
 import com.app.livefree.livefree.model.Task;
 
@@ -32,14 +33,22 @@ public class TaskListActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.listView_tasklist);
         taskList=new ArrayList<>();
 
-        Task task1=new Task("Take Groceries",1);
-        Task task2=new Task("Buy Medicine",3);
-        taskList.add(task1);
-        taskList.add(task2);
+        Task task1=new Task("Take Groceries","HIGH");
+        Task task2=new Task("Buy Medicine","LOW");
+        TaskDBHandler.InsertTask(getApplicationContext(),task1);
+        TaskDBHandler.InsertTask(getApplicationContext(),task2);
+
+        taskList=TaskDBHandler.GetAllTasks(this.getApplicationContext());
 
         taskListAdapter = new TaskListAdapter(this, taskList);
         mListView.setAdapter(taskListAdapter);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        taskListAdapter.notifyDataSetChanged();
     }
 
     @Override
