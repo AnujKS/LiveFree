@@ -1,21 +1,33 @@
 package com.app.livefree.livefree;
 
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
+import com.app.livefree.livefree.model.SimpleGeofence;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.common.api.ResultCallback;
@@ -29,65 +41,22 @@ import java.util.Map;
 public class GeofencingMapActivity extends FragmentActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>{
 
-    /**
-     * The map over which we show geofences
-     */
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-
-    /**
-     * The List of geofences
-     */
-    private List<Geofence> mGeofenceList;
-
-    /**
-     * Provides the entry point to Google Play services.
-     */
-    protected GoogleApiClient mGoogleApiClient;
-
-    /**
-     * Used to keep track of whether geofences were added.
-     */
-    private boolean mGeofencesAdded;
-
-    /**
-     * Used when requesting to add or remove geofences.
-     */
-    private PendingIntent mGeofencePendingIntent;
+    private GoogleMap mMap;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mCurrentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geofencing_map);
-
-        // Empty list for storing geofences.
-        mGeofenceList = new ArrayList<>();
-
-        // Initially set the PendingIntent used in addGeofences() and removeGeofences() to null.
-        mGeofencePendingIntent = null;
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            buildAlertMessageNoGps();
+        }
+        buildGoogleApiClient();
         setUpMapIfNeeded();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setUpMapIfNeeded();
-    }
-
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -96,24 +65,24 @@ public class GeofencingMapActivity extends FragmentActivity implements
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                setUpMap();
+                cameraUpdate(0.0,0.0);
             }
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
-    private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+
+    private void cameraUpdate(Double lat,Double lon) {
+        CameraPosition INIT =
+                new CameraPosition.Builder()
+                        .target(new LatLng(lat, lon))
+                        .zoom( 17.5F )
+                        .bearing( 300F) // orientation
+                        .tilt( 50F) // viewing angle
+                        .build();
+        // use GooggleMap mMap to move camera into position
+        mMap.animateCamera( CameraUpdateFactory.newCameraPosition(INIT) );
     }
 
-    /**
-     * Builds a GoogleApiClient. Uses the {@code #addApi} method to request the LocationServices API.
-     */
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -131,132 +100,87 @@ public class GeofencingMapActivity extends FragmentActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
-    }
-
-    /**
-     * Runs when a GoogleApiClient object successfully connects.
-     */
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "Connected to GoogleApiClient");
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
-        // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+    public void onConnected(Bundle bundle) {
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if(mCurrentLocation != null) {
+            cameraUpdate(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+            SimpleGeofence s = new SimpleGeofence();
+            s.setId(1);
+            s.setLatitude(mCurrentLocation.getLatitude()-2.0);
+            s.setLongitude(mCurrentLocation.getLongitude()-4.0);
+            s.setRadius(5000);
+            addMarkerForFence(s);
+        }
     }
 
     @Override
-    public void onConnectionSuspended(int cause) {
-        // The connection to Google Play services was lost for some reason.
-        Log.i(TAG, "Connection suspended");
+    public void onConnectionSuspended(int i) {
 
-        // onConnected() will be called again automatically when the service reconnects
     }
 
-    /**
-     * Builds and returns a GeofencingRequest. Specifies the list of geofences to be monitored.
-     * Also specifies how the geofence notifications are initially triggered.
-     */
-    private GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
 
-        // The INITIAL_TRIGGER_ENTER flag indicates that geofencing service should trigger a
-        // GEOFENCE_TRANSITION_ENTER notification when the geofence is added and if the device
-        // is already inside that geofence.
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-
-        // Add the geofences to be monitored by geofencing service.
-        builder.addGeofences(mGeofenceList);
-
-        // Return a GeofencingRequest.
-        return builder.build();
     }
 
-    /**
-     * Runs when the result of calling addGeofences() and removeGeofences() becomes available.
-     * Either method can complete successfully or with an error.
-     *
-     * Since this activity implements the {@link ResultCallback} interface, we are required to
-     * define this method.
-     *
-     * @param status The Status returned through a PendingIntent when addGeofences() or
-     *               removeGeofences() get called.
-     */
+    @Override
     public void onResult(Status status) {
-        if (status.isSuccess()) {
 
-            Toast.makeText(
-                    this,
-                    getString(mGeofencesAdded ? R.string.geofences_added :
-                            R.string.geofences_removed),
-                    Toast.LENGTH_SHORT
-            ).show();
-        } else {
-            // Get the status code for the error and log it using a user-friendly message.
-            String errorMessage = GeofenceStatusCodes.getStatusCodeString(
-                    status.getStatusCode());
-            Log.e(TAG, errorMessage);
-        }
     }
 
-    /**
-     * Gets a PendingIntent to send with the request to add or remove Geofences. Location Services
-     * issues the Intent inside this PendingIntent whenever a geofence transition occurs for the
-     * current list of geofences.
-     *
-     * @return A PendingIntent for the IntentService that handles geofence transitions.
-     */
-    private PendingIntent getGeofencePendingIntent() {
-        // Reuse the PendingIntent if we already have it.
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
+    public void addMarkerForFence(SimpleGeofence fence){
+        if(fence == null){
+            // display en error message and return
+            return;
         }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mMap.addMarker( new MarkerOptions()
+                .position( new LatLng(fence.getLatitude(), fence.getLongitude()) )
+                .title("Fence " + fence.getId())
+                .snippet("Radius: " + fence.getRadius()) ).showInfoWindow();
+
+//Instantiates a new CircleOptions object +  center/radius
+        CircleOptions circleOptions = new CircleOptions()
+                .center( new LatLng(fence.getLatitude(), fence.getLongitude()) )
+                .radius( fence.getRadius() )
+                .fillColor(0x40ff0000)
+                .strokeColor(Color.TRANSPARENT)
+                .strokeWidth(2);
+
+// Get back the mutable Circle
+        Circle circle = mMap.addCircle(circleOptions);
+// more operations on the circle...
+
     }
 
-    public void populateGeofenceList() {
-        for (Map.Entry<String, LatLng> entry : BAY_AREA_LANDMARKS.entrySet()) {
-
-            mGeofenceList.add(new Geofence.Builder()
-                    // Set the request ID of the geofence. This is a string to identify this
-                    // geofence.
-                    .setRequestId(entry.getKey())
-
-                            // Set the circular region of this geofence.
-                    .setCircularRegion(
-                            entry.getValue().latitude,
-                            entry.getValue().longitude,
-                            5000
-                    )
-
-                            // Set the expiration duration of the geofence. This geofence gets automatically
-                            // removed after this period of time.
-                    .setExpirationDuration(10000)
-
-                            // Set the transition types of interest. Alerts are only generated for these
-                            // transition. We track entry and exit transitions in this sample.
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-
-                            // Create the geofence.
-                    .build());
-        }
-    }
-
-    public static final HashMap<String, LatLng> BAY_AREA_LANDMARKS = new HashMap<String, LatLng>();
-    static {
-        // San Francisco International Airport.
-        BAY_AREA_LANDMARKS.put("SFO", new LatLng(37.621313, -122.378955));
-
-        // Googleplex.
-        BAY_AREA_LANDMARKS.put("GOOGLE", new LatLng(37.422611,-122.0840577));
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused")
+                                        final DialogInterface dialog, @SuppressWarnings("unused")
+                                        final int id) {
+                        startActivity(new Intent(
+                                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused")
+                    final int id) {
+                        dialog.cancel();
+                        finish();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
     private static final String TAG = "GeofencingMapActivity";
+
 }

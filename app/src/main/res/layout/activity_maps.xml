@@ -1,17 +1,30 @@
-<RelativeLayout
-    tools:context="com.app.livefree.livefree.MapsActivity"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
 
-<AutoCompleteTextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content" />
+
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:context="com.app.livefree.livefree.MapsActivity"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+    android:name="com.google.android.gms.maps.SupportMapFragment">
+        <TextView
+            android:layout_width="match_parent"
+            android:minWidth="80dp" android:id="@+id/show_near_me_tv"
+            android:text="Choose a near by place?"
+            android:background="@color/white"
+            android:layout_gravity="top"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="20dp" android:layout_marginRight="20dp"
+            android:layout_height="wrap_content"  android:layout_centerHorizontal="true"             android:padding="5dp"            />
 
-</RelativeLayout>
+        <EditText
+            android:layout_width="match_parent"
+            android:padding="5dp"
+            android:layout_height="wrap_content"
+            android:text="@string/type_location_here"
+            android:layout_gravity="top"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="20dp" android:layout_marginRight="20dp"
+            android:id="@+id/geocoder_edit_text" android:layout_marginTop="130dp"/>
+
+    </fragment>
+

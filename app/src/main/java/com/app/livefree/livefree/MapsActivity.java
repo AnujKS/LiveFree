@@ -1,9 +1,11 @@
 package com.app.livefree.livefree;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
@@ -12,6 +14,10 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.app.livefree.livefree.constants.ApplicationConstants;
 import com.app.livefree.livefree.exception.LiveFreeErrors;
@@ -22,14 +28,17 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
 import java.util.Locale;
 
@@ -38,46 +47,135 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Location mCurrentLocation;
-    private LatLng mLastKnownLocation;
-
+    private LatLng mLastKnownLocation = new LatLng(0,0);
+    private EditText geocoderEditText;
+    private TextView showPlacesNearMe;
+    private Context theActivityContext;
+    private Place mPlaceFromAutoComplete;
+    Intent callingIntent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        buildGoogleApiClient();
+        cameraUpdate(0.0,0.0);
+        geocoderEditText = (EditText) findViewById(R.id.geocoder_edit_text);
+        showPlacesNearMe = (TextView) findViewById(R.id.show_near_me_tv);
 
-        Intent callingIntent = getIntent();
+        theActivityContext = this;
+        geocoderEditText.setOnClickListener(mGeoCoderEditTextOnClickListener);
+        showPlacesNearMe.setOnClickListener(mShowNearMeTextOnClickListener);
+
+         callingIntent = getIntent();
         int callingActivity = callingIntent.getIntExtra(ApplicationConstants.CALLING_ACTIVITY,0);
         switch (callingActivity) {
 
             case ApplicationConstants.ADD_TASK_ACTIVITY: {
-                try {
-                    PlacePicker.IntentBuilder intentBuilder =
-                            new PlacePicker.IntentBuilder();
-                    Intent intent = intentBuilder.build(this);
-                    // Start the intent by requesting a result,
-                    // identified by a request code.
-                    startActivityForResult(intent, 1);
 
-                } catch (GooglePlayServicesRepairableException e) {
-                    // ...
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    // ...
-                }
                 //TODO get name of the location from input box
                 //TODO use geocoding here
                 //TODO send it to calling activity
+                break;
+            }
+            case ApplicationConstants.AUTO_COMPLETE_GEO_CODE: {
+                String json = callingIntent.getStringExtra(ApplicationConstants.PLACE_FROM_AUTOCOMPLETE);
+                mPlaceFromAutoComplete = (new Gson()).fromJson(json,Place.class);
+                MapsFilter mapsFilter = new MapsFilter();
+                mapsFilter.setLatLng(mPlaceFromAutoComplete.getLatLng());
+                mapsFilter.setSnippet(String.valueOf(mPlaceFromAutoComplete.getAddress()));
+                mapsFilter.setTitle(String.valueOf(mPlaceFromAutoComplete.getName()));
                 break;
             }
             default: {
                 if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     buildAlertMessageNoGps();
                 }
+                MapsFilter mapsFilter = new MapsFilter();
+                mapsFilter.setSnippet("");
+                mapsFilter.setTitle("You are here");
+                mapsFilter.setLatLng(new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude()));
+                mapsFilter.setTheBitmap(BitmapFactory.decodeResource(getResources(),R.id.tasklist_work_icon));
+                try {
+                    showMarker(mapsFilter);
+                } catch (LiveFreeException e) {
+                    Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+                }
             }
         }
-
-        buildGoogleApiClient();
         setUpMapIfNeeded();
+
+    }
+
+    private void cameraUpdate(Double lat,Double lon) {
+        CameraPosition INIT =
+                new CameraPosition.Builder()
+                        .target(new LatLng(lat, lon))
+                        .zoom( 17.5F )
+                        .bearing( 300F) // orientation
+                        .tilt( 50F) // viewing angle
+                        .build();
+        // use GooggleMap mMap to move camera into position
+        mMap.animateCamera( CameraUpdateFactory.newCameraPosition(INIT) );
+    }
+
+
+    View.OnClickListener mGeoCoderEditTextOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent(theActivityContext,AutoCompletePlacePicker.class);
+            startActivity(intent);
+            finish();
+        }
+    };
+
+    View.OnClickListener mShowNearMeTextOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            try {
+                PlacePicker.IntentBuilder intentBuilder =
+                        new PlacePicker.IntentBuilder();
+                Intent intent = intentBuilder.build(theActivityContext);
+                // Start the intent by requesting a result,
+                // identified by a request code.
+                startActivityForResult(intent, REQUEST_PLACE_PICKER);
+
+            } catch (GooglePlayServicesRepairableException e) {
+                Log.e(TAG,"GooglePlayServicesRepairableException",e);
+            } catch (GooglePlayServicesNotAvailableException e) {
+                Log.e(TAG,"GooglePlayServicesNotAvailableException",e);
+            }
+        }
+    };
+
+
+    @Override
+    protected void onActivityResult(int requestCode,
+                                    int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_PLACE_PICKER
+                && resultCode == Activity.RESULT_OK) {
+
+            // The user has selected a place. Extract the name and address.
+            final Place place = PlacePicker.getPlace(data, this);
+
+            final CharSequence name = place.getName();
+            final CharSequence address = place.getAddress();
+            String attributions = PlacePicker.getAttributions(data);
+            if (attributions == null) {
+                attributions = "";
+            }
+            callingIntent.putExtra(ApplicationConstants.PLACE_FROM_PICKER,(new Gson()).toJson(place));
+            startActivity(callingIntent);
+            finish();
+           /* mViewName.setText(name);
+            mViewAddress.setText(address);
+            mViewAttributions.setText(Html.fromHtml(attributions));*/
+
+        } else {
+            setUpMap();
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -109,10 +207,6 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                setUpMap();
-            }
         }
     }
 
@@ -131,13 +225,22 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
         if(mapsFilter == null) {
             throw new LiveFreeException(LiveFreeErrors.MAP_FILTER_NULL);
         }
+        if(mapsFilter.getTheBitmap() == null) {
 
-        mMap.addMarker(new MarkerOptions().position(mapsFilter.getLatLng())
-                .snippet(mapsFilter.getSnippet())
-                .title(mapsFilter.getTitle())
-                .icon(BitmapDescriptorFactory.fromBitmap(getBitmapForMarker(mapsFilter.getTheBitmap())))
-                .draggable(false)
-                .anchor(0.5f, 1));
+            mMap.addMarker(new MarkerOptions().position(mapsFilter.getLatLng())
+                    .snippet(mapsFilter.getSnippet())
+                    .title(mapsFilter.getTitle())
+                    .draggable(false)
+                    .anchor(0.5f, 1));
+        }
+        else {
+            mMap.addMarker(new MarkerOptions().position(mapsFilter.getLatLng())
+                    .snippet(mapsFilter.getSnippet())
+                    .icon(BitmapDescriptorFactory.fromBitmap(getBitmapForMarker(mapsFilter.getTheBitmap())))
+                    .title(mapsFilter.getTitle())
+                    .draggable(false)
+                    .anchor(0.5f, 1));
+        }
         CameraUpdate center =
                 CameraUpdateFactory.newLatLng(mapsFilter.getLatLng());
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
@@ -216,6 +319,10 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     public void onConnected(Bundle bundle) {
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
+        if(mCurrentLocation != null) {
+            cameraUpdate(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+        }
+        mLastKnownLocation = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
     }
 
     @Override
@@ -235,5 +342,6 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     /************************************Begin: Constants************************************/
     private static final String TAG = "MapsActivity";
     public static final Locale ENGLISH = Locale.ENGLISH;
+    private static final int REQUEST_PLACE_PICKER = 2;
     /************************************End: Constants************************************/
 }
