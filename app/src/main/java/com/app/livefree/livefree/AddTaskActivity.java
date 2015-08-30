@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
 import com.app.livefree.livefree.R;
+import com.app.livefree.livefree.constants.ApplicationConstants;
 import com.app.livefree.livefree.dbhandler.TaskDBHandler;
 import com.app.livefree.livefree.model.Task;
 
@@ -20,6 +23,7 @@ public class AddTaskActivity extends AppCompatActivity {
     EditText description;
     EditText priority;
     TimePicker time;
+    Button setLocation;
 
 
     @Override
@@ -30,6 +34,18 @@ public class AddTaskActivity extends AppCompatActivity {
         description=(EditText)findViewById(R.id.input_description_edittext);
         priority=(EditText)findViewById(R.id.input_prioroty_edittext);
         time=(TimePicker)findViewById(R.id.timePicker);
+        setLocation=(Button)findViewById(R.id.setlocation);
+
+        setLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(AddTaskActivity.this,GeofencingMapActivity.class);
+                intent.putExtra("lat",12.33);
+                intent.putExtra("long",77.55);
+                intent.putExtra(ApplicationConstants.CALLING_ACTIVITY,ApplicationConstants.ADD_TASK_ACTIVITY);
+                startActivity(intent);
+            }
+        });
 
 
     }
